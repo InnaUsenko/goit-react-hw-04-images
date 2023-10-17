@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
@@ -7,131 +7,111 @@ import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 import { fetchImages } from '../services/api';
 
-class App extends Component {
-  appStyles = {
+const App = () => {
+  const appStyles = {
     display: 'grid',
     gridTemplateColumns: '1fr',
     gridGap: '16px',
     paddingBottom: '24px',
   };
 
-  state = {
-    images: [],
-    searchQuery: '',
-    per_page: 12,
-    page: 1,
-    isLoading: false,
-    isLoadMore: false,
-    isModalShow: false,
-    pict: { url: null, alt: 'no image' },
-    error: null,
+  const [images, setImages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [perPage, setPerPage] = useState(12);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadMore, setIsLoadMore] = useState(false);
+  const [isModalShow, setIsModalShow] = useState(false);
+  const [pict, setPict] = useState({ id: '0', url: null, alt: 'no image' });
+  const [error, setError] = useState(null);
+
+  const handleSearch = searchQuery => {
+    setImages([]);
+    setSearchQuery(searchQuery);
+    setPerPage(12);
+    setPage(1);
+    setIsLoading(false);
+    setIsLoadMore(false);
+    setIsModalShow(false);
+    setPict({ id: '0', url: null, alt: 'no image' });
+    setError(null);
   };
 
-  handleSearch = searchQuery => {
-    this.setState({
-      images: [],
-      searchQuery: searchQuery,
-      per_page: 12,
-      page: 1,
-      isLoading: false,
-      isLoadMore: false,
-      isModalShow: false,
-      pict: { url: null, alt: 'no image' },
-      error: null,
-    });
+  const hendleLoadMore = () => {
+    setPage(page + 1);
   };
 
-  hendleLoadMore = () => {
-    this.setState({
-      page: this.state.page + 1,
-    });
-  };
-
-  showModal = id => {
-    const images = this.state.images;
-    let pict = { id: null, url: null, alt: 'no image' };
+  const showModal = id => {
+    let localPict = { id: null, url: null, alt: 'no image' };
     for (const img of images) {
       if (img.id.toString() === id.toString()) {
-        pict = img;
+        localPict = img;
         break;
       }
     }
-    this.setState({
-      isModalShow: true,
-      pict,
-    });
+    setIsModalShow(true);
+    setPict(localPict);
   };
 
-  closeModal = () => {
-    this.setState({
-      isModalShow: false,
-    });
+  const closeModal = () => {
+    setIsModalShow(false);
   };
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (
-      this.state.searchQuery &&
-      (prevState.searchQuery !== this.state.searchQuery ||
-        prevState.page !== this.state.page)
-    ) {
-      this.setState({
-        isLoading: true,
-      });
-      fetchImages(this.state.searchQuery, this.state.per_page, this.state.page)
+  // componentDidUpdate(prevProps, prevState, snapshot)
+  useEffect(() => {
+    console.log('Updating phase: same when componentDidUpdate runs');
+    if (searchQuery) {
+      setIsLoading(true);
+
+      fetchImages(searchQuery, perPage, page)
         .then(el => {
-          let isLoadMore = true;
-          if (el.totalHits <= this.state.page * this.state.per_page) {
-            isLoadMore = false;
+          let localIsLoadMore = true;
+          if (el.totalHits <= page * perPage) {
+            localIsLoadMore = false;
             window.alert(
               "We're sorry, but you've reached the end of search results."
             );
           }
-          this.setState({
-            images: [...this.state.images, ...el.hits],
-            isLoadMore,
-          });
+          setImages([...images, ...el.hits]);
+          setIsLoadMore(localIsLoadMore);
         })
-        .catch(error => {
-          this.setState({ error });
+        .catch(err => {
+          setError(err);
         })
         .finally(() => {
-          this.setState({ isLoading: false });
+          setIsLoading(false);
         });
     }
-  }
+  }, [searchQuery, page, perPage]);
 
-  render() {
-    const { images, isLoading, isLoadMore, isModalShow, error } = this.state;
-
-    return (
-      <div style={this.appStyles}>
-        <Searchbar handleSearch={this.handleSearch} />
-        <ImageGallery>
-          {images.map(el => {
-            return (
-              <ImageGalleryItem
-                key={el.id}
-                id={el.id}
-                src={el.webformatURL}
-                alt={el.tags}
-                showModal={this.showModal}
-              />
-            );
-          })}
-        </ImageGallery>
-        {isLoadMore && <Button hendleLoadMore={this.hendleLoadMore} />}
-        {error != null && <p>{error}</p>}
-        {isLoading && <Loader />}
-        {isModalShow && (
-          <Modal
-            src={this.state.pict.largeImageURL}
-            alt={this.state.pict.tags}
-            closeModal={this.closeModal}
-          />
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div style={appStyles}>
+      <Searchbar handleSearch={handleSearch} />
+      <ImageGallery>
+        {images.map(el => {
+          return (
+            <ImageGalleryItem
+              key={el.id}
+              id={el.id}
+              src={el.webformatURL}
+              alt={el.tags}
+              showModal={showModal}
+            />
+          );
+        })}
+      </ImageGallery>
+      {isLoadMore && <Button hendleLoadMore={hendleLoadMore} />}
+      {error != null && <p>{error}</p>}
+      {isLoading && <Loader />}
+      {isModalShow && (
+        <Modal
+          src={pict.largeImageURL}
+          alt={pict.tags}
+          closeModal={closeModal}
+        />
+      )}
+    </div>
+  );
+};
 
 export default App;

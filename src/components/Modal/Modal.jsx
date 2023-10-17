@@ -1,25 +1,21 @@
 import React, { useEffect } from 'react';
 import css from './Modal.module.css';
 export const Modal = props => {
-  //componentDidMount()
   useEffect(() => {
-    document.addEventListener('keydown', escFunction, false);
-  }, []);
-
-  //componentWillUnmount()
-  useEffect(() => {
+    const escFunction = event => {
+      if (event.key === 'Escape') {
+        props.closeModal();
+      }
+    };
     //componentDidMount()
-
+    document.addEventListener('keydown', escFunction, false);
+    console.log('addEventListener');
     return () => {
+      //componentWillUnmount()
       document.removeEventListener('keydown', escFunction, false);
+      console.log('removeEventListener');
     };
   }, []);
-
-  const escFunction = event => {
-    if (event.key === 'Escape') {
-      props.closeModal();
-    }
-  };
 
   return (
     <div
