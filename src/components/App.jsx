@@ -72,8 +72,8 @@ const App = () => {
               "We're sorry, but you've reached the end of search results."
             );
           }
-          const localImages = [...images, ...el.hits];
-          setImages(localImages);
+
+          setImages(prevState => [...prevState, ...el.hits]);
           setIsLoadMore(localIsLoadMore);
         })
         .catch(err => {
@@ -83,7 +83,7 @@ const App = () => {
           setIsLoading(false);
         });
     }
-  }, [searchQuery, page, perPage]); //adding the "images" parameter does the looping. Otherwise WARNING
+  }, [images, searchQuery, page, perPage, isLoadMore]); //adding the "images" parameter does the looping. Otherwise WARNING
 
   return (
     <div style={appStyles}>
