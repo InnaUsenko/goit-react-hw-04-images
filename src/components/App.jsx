@@ -82,7 +82,7 @@ const App = () => {
           setIsLoading(false);
         });
     }
-  }, [searchQuery, page, perPage]);
+  }, [images, searchQuery, page, perPage]);
 
   return (
     <div style={appStyles}>

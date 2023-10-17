@@ -15,7 +15,7 @@ export const Modal = props => {
       document.removeEventListener('keydown', escFunction, false);
       console.log('removeEventListener');
     };
-  }, []);
+  }, [props]);
 
   return (
     <div
