@@ -60,7 +60,7 @@ const App = () => {
   // componentDidUpdate(prevProps, prevState, snapshot)
   useEffect(() => {
     console.log('Updating phase: same when componentDidUpdate runs');
-    if (searchQuery) {
+    if (searchQuery && searchQuery.length > 0) {
       setIsLoading(true);
 
       fetchImages(searchQuery, perPage, page)
@@ -72,7 +72,8 @@ const App = () => {
               "We're sorry, but you've reached the end of search results."
             );
           }
-          setImages([...images, ...el.hits]);
+          const localImages = [...images, ...el.hits];
+          setImages(localImages);
           setIsLoadMore(localIsLoadMore);
         })
         .catch(err => {
@@ -82,7 +83,7 @@ const App = () => {
           setIsLoading(false);
         });
     }
-  }, [images, searchQuery, page, perPage]);
+  }, [searchQuery, page, perPage]); //adding the "imageі" parameter does the looping. Otherwise WARNING
 
   return (
     <div style={appStyles}>
