@@ -83,7 +83,7 @@ const App = () => {
           setIsLoading(false);
         });
     }
-  }, [searchQuery, page, perPage]); //adding the "imageі" parameter does the looping. Otherwise WARNING
+  }, [searchQuery, page, perPage]); //adding the "images" parameter does the looping. Otherwise WARNING
 
   return (
     <div style={appStyles}>
